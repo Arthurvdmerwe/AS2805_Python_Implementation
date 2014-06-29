@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/Development/!svn/ver/94/CPSConnectSwitch/AS2805
+END
+AS2805_Server.py
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/Development/!svn/ver/125/CPSConnectSwitch/AS2805/AS2805_Server.py
+END
+ASResponseCodes.py
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/Development/!svn/ver/125/CPSConnectSwitch/AS2805/ASResponseCodes.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/Development/!svn/ver/109/CPSConnectSwitch/AS2805/__init__.py
+END
+AS2805.py
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/Development/!svn/ver/98/CPSConnectSwitch/AS2805/AS2805.py
+END
+AS2805_Client.py
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/Development/!svn/ver/125/CPSConnectSwitch/AS2805/AS2805_Client.py
+END
+AS2805Errors.py
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/Development/!svn/ver/97/CPSConnectSwitch/AS2805/AS2805Errors.py
+END
