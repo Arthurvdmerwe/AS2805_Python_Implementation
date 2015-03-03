@@ -2,7 +2,8 @@ __author__ = 'arthurvandermerwe'
 
 import struct
 
-from AS2805Errors import *
+from Host_Node.AS2805Errors import *
+import binascii
 
 
 class AS2805:
@@ -48,34 +49,34 @@ class AS2805:
     _DEF[15] = ['15', 'Date, Settlement', 'F', 4, 'n']
     _DEF[16] = ['16', 'Date, Conversion', 'F', 4, 'n']
     _DEF[18] = ['18', 'Merchant Type', 'F', 4, 'n']
-    _DEF[22] = ['22', 'POS Entry Mode', 'F', 3, 'n']
+    _DEF[22] = ['22', 'POS Entry Mode', 'F', 4, 'n']
     _DEF[23] = ['23', 'Card Sequence Number', 'F', 3, 'n']
-    _DEF[25] = ['25', 'POS Condition Code', 'F', 2, 'n']
-    _DEF[28] = ['28', 'Amount, Transaction Fee', 'F', 9, 'xn']
+    _DEF[25] = ['25', 'POS Condition Code', 'F', 2, 'xn']
+    _DEF[28] = ['28', 'Amount, Transaction Fee', 'F', 10, 'xn']
     _DEF[32] = ['32', 'Acquiring Institution ID Code', 'LL', 11, 'n']
     _DEF[33] = ['33', 'Forwarding Institution ID Code', 'LL', 11, 'n']
-    _DEF[35] = ['35', 'Track 2 Data', 'LL', 37, 'an']
-    _DEF[37] = ['37', 'Retrieval Reference Number', 'F', 12, 'an']
+    _DEF[35] = ['35', 'Track 2 Data', 'LL', 37, 'F']
+    _DEF[37] = ['37', 'Retrieval Reference Number', 'F', 24, 'an']
     _DEF[38] = ['38', 'Authorization ID Response', 'F', 6, 'an']
-    _DEF[39] = ['39', 'Response Code', 'F', 2, 'an']
-    _DEF[41] = ['41', 'Card Acceptor Terminal ID', 'F', 8, 'ans']
-    _DEF[42] = ['42', 'Card Acceptor ID Code', 'F', 15, 'ans']
-    _DEF[43] = ['43', 'Card Acceptor Name Location', 'F', 40, 'asn']
+    _DEF[39] = ['39', 'Response Code', 'F', 4, 'an']
+    _DEF[41] = ['41', 'Card Acceptor Terminal ID', 'F', 16, 'ans']
+    _DEF[42] = ['42', 'Card Acceptor ID Code', 'F', 30, 'ans']
+    _DEF[43] = ['43', 'Card Acceptor Name Location', 'F', 80, 'ans']
     _DEF[44] = ['44', 'Additional Response Data', 'LL', 25, 'ans']
-    _DEF[47] = ['47', 'Additional Data National', 'LLL', 999, 'ans']
-    _DEF[48] = ['48', 'Additional Data Private', 'LLL', 999, 'ans']
+    _DEF[47] = ['47', 'Additional Data National', 'LLLLLL', 999, 'ans']
+    _DEF[48] = ['48', 'Additional Data Private', 'LLLLLL', 999, 'an']
     _DEF[49] = ['49', 'Currency Code, Transaction', 'F', 3, 'n']
     _DEF[50] = ['50', 'Currency Code, Settlement', 'F', 3, 'n']
     _DEF[51] = ['51', 'Currency Code, Billing', 'F', 3, 'n']
-    _DEF[52] = ['52', 'PIN Data', 'F', 8, 'b']
-    _DEF[53] = ['53', 'Security Related Control Information', 'F', 48, 'b']
-    _DEF[55] = ['55', 'ICC Data', 'LLL', 999, 'b']
+    _DEF[52] = ['52', 'PIN Data', 'F', 16, 'b']
+    _DEF[53] = ['53', 'Security Related Control Information', 'F', 16, 'n']
+    _DEF[55] = ['55', 'ICC Data', 'LLLL', 999, 'b']
     _DEF[57] = ['57', 'Amount Cash', 'F', 12, 'n']
     _DEF[58] = ['58', 'Ledger Balance', 'F', 12, 'n']
     _DEF[59] = ['59', 'Account Balance', 'F', 12, 'n']
-    _DEF[64] = ['64', 'Message Authentication Code', 'F', 8, 'b']
+    _DEF[64] = ['64', 'Message Authentication Code', 'F', 16, 'b']
     _DEF[66] = ['66', 'Settlement Code', 'F', 1, 'n']
-    _DEF[70] = ['70', 'Network Management Information Code', 'F', 3, 'n']
+    _DEF[70] = ['70', 'Network Management Information Code', 'F', 4, 'n']
     _DEF[74] = ['74', 'Credits, Number', 'F', 10, 'n']
     _DEF[75] = ['75', 'Credits, Reversal Number', 'F', 10, 'n']
     _DEF[76] = ['76', 'Debits, Number', 'F', 10, 'n']
@@ -92,11 +93,13 @@ class AS2805:
     _DEF[89] = ['89', 'Debits, Reversal Amount', 'F', 16, 'n']
     _DEF[90] = ['90', 'Original Data Elements', 'F', 42, 'n']
     _DEF[97] = ['97', 'Amount, Net Settlement', 'F', 17, 'xn']
+    _DEF[95] = ['95', 'Replacement Amounts', 'F', 42, 'ans']
     _DEF[99] = ['99', 'Settlement Institution ID Code', 'LL', 11, 'n']
     _DEF[100] = ['100', 'Receiving Institution ID Code', 'LL', 11, 'n']
     _DEF[112] = ['112', 'Key Management Data', 'LLL', 999, 'b']
     _DEF[118] = ['118', 'Cash Total Number', 'LLL', 10, 'n']
     _DEF[119] = ['119', 'Cash Total Amount', 'LLL', 10, 'n']
+    _DEF[125] = ['125', 'Network Management Information', 'LLL', 40, 'ans']
     _DEF[128] = ['128', 'MAC Extended', 'F', 8, 'b']
 
 
@@ -247,7 +250,7 @@ class AS2805:
         elif self.getLengthType(bit) == 'LLLLL':
             self.__setBitVariableLength(bit, value, 5)
         elif self.getLengthType(bit) == 'LLLLLL':
-            self.__setBitVariableLength(bit, value, 6)
+            self.__setBitLLLLLLLength(bit, value, 6)
 
         #Continuation bit?
         if bit > 64:
@@ -313,41 +316,32 @@ class AS2805:
     ################################################################################################
 
     def __getBitmapFromStr(self, bitmap):
-        """Method that receive a bitmap str and transfor it to AS2805 object readable.
-        @param: bitmap -> bitmap str to be readable
-        It's a internal method, so don't call!
-        """
-        if self.DEBUG == True:
-            print '__getBitmapFromStr(%s)' % ReadableAscii(bitmap)
+            """Method that receive a bitmap str and transfor it to ISO8583 object readable.
+            @param: bitmap -> bitmap str to be readable
+            It's a internal method, so don't call!
+            """
+            #Need to check if the size is correct etc...
+            cont = 0
 
-        #Need to check if the size is correct etc...
-        cont = 0
+            if self.BITMAP_HEX != '':
+                    self.BITMAP_HEX = ''
 
-        if self.BITMAP_HEX != '':
-            self.BITMAP_HEX = ''
+            for x in range(0,32,2):
+                    if (int(bitmap[0:2],16) & self._BIT_POSITION_1) != self._BIT_POSITION_1: # Only 1 bitmap
+                            if self.DEBUG == True:
+                                    print 'Token[%d] %s converted to int is = %s' %(x, bitmap[x:x+2], int(bitmap[x:x+2],16))
 
-        self.BITMAP_BIN = ''
+                            self.BITMAP_HEX += bitmap[x:x+2]
+                            self.BITMAP[cont] = int(bitmap[x:x+2],16)
+                            if x == 14:
+                                    break
+                    else: # Second bitmap
+                            if self.DEBUG == True:
+                                    print 'Token[%d] %s converted to int is = %s' %(x, bitmap[x:x+2], int(bitmap[x:x+2],16))
 
-        for x in range(0, 16):
-            if (ord(bitmap[0]) & self._BIT_POSITION_1) != self._BIT_POSITION_1: # Only 1 bitmap
-                if self.DEBUG == True:
-                    print 'Token[%d] = %s' % (x, hex(ord(bitmap[x])))
-
-                self.BITMAP_BIN += bitmap[x]
-                tm = '00' + hex(ord(bitmap[x]))[2:]
-                self.BITMAP_HEX += tm[-2:]
-                self.BITMAP[cont] = int(tm, 16)
-                if x == 7:
-                    break
-            else: # Second bitmap
-                if self.DEBUG == True:
-                    print 'Token[%d] = %s' % (x, hex(ord(bitmap[x])))
-
-                self.BITMAP_BIN += bitmap[x]
-                tm = '00' + hex(ord(bitmap[x]))[2:]
-                self.BITMAP_HEX += tm[-2:]
-                self.BITMAP[cont] = int(tm, 16)
-            cont += 1
+                            self.BITMAP_HEX += bitmap[x:x+2]
+                            self.BITMAP[cont] = int(bitmap[x:x+2],16)
+                    cont += 1
 
 
     ################################################################################################
@@ -370,8 +364,8 @@ class AS2805:
         bits = []
         for c in range(0, 16):
             for d in range(1, 9):
-            #				if self.DEBUG == True:
-            #					print 'Value (%d)-> %s & %s = %s' % (d,self.BITMAP[c] , self._TMP[d], (self.BITMAP[c] & self._TMP[d]) )
+                #if self.DEBUG == True:
+                #print 'Value (%d)-> %s & %s = %s' % (d,self.BITMAP[c] , self._TMP[d], (self.BITMAP[c] & self._TMP[d]) )
                 if (self.BITMAP[c] & self._TMP[d]) == self._TMP[d]:
                     if d == 1: #  e o 8 bit
                         if self.DEBUG == True:
@@ -453,9 +447,51 @@ class AS2805:
 
         size = "%s" % len(value)
 
-        self._VALUES[bit] = "%s%s" % ( size.zfill(length), value)
+
+        type = self.getDataType(bit)
+
+        if int(size)%2 != 0:
+            value = value + 'F'
 
 
+        #ICC VALUES
+        if type == 'b' and length == 4:
+            size = str(int(size) / 2)
+
+        self._VALUES[bit] = "%s%s" % (size.zfill(length), value)
+
+
+    def __setBitLLLLLLLength(self, bit, value, length):
+        """Method that set a bit with value in form LL
+        It put the size in front of the value
+        Example: pack.setBit(99,'123') -> Bit 99 is a LL type, so this bit, in ASCII form need to be 03123. To understand, 03 is the size of the information and 123 is the information/value
+        @param: bit -> bit to be setted
+        @param: value -> value to be setted
+        @raise: ValueToLarge Exception
+        It's a internal method, so don't call!
+        """
+
+        value = "%s" % value
+
+        if len(value) > 10 ** length - 1:
+            raise ValueToLarge('Error: value up to size! Bit[%s] of type %s limit size = %s' % (
+                bit, self.getLengthType(bit), self.getMaxLength(bit)))
+        if len(value) > self.getMaxLength(bit):
+            raise ValueToLarge('Error: value up to size! Bit[%s] of type %s limit size = %s' % (
+                bit, self.getLengthType(bit), self.getMaxLength(bit)))
+
+        size_int = int(len(value))
+        size_int = size_int / 2
+        if size_int < 10:
+            size_int = '00' + str(size_int)
+        else:
+            size_int = '0' + str(size_int)
+        #print size_int
+        size_ascii = binascii.hexlify(size_int)
+
+
+        #print "%s%s0" % (size_ascii, value)
+        self._VALUES[bit] = "%s%s" % (size_ascii, value)
         ################################################################################################
 
     def __setBitFixedLength(self, bit, value):
@@ -470,13 +506,44 @@ class AS2805:
         """
 
         value = "%s" % value
+        length = self.getMaxLength(bit)
+
 
         if len(value) > self.getMaxLength(bit):
+
+
             value = value[0:self.getMaxLength(bit)]
-            raise ValueToLarge('Error: value up to size! Bit[%s] of type %s limit size = %s' % (
-                bit, self.getLengthType(bit), self.getMaxLength(bit)))
+            raise ValueToLarge('Error: value up to size! Bit[%s] of type %s limit size = %s' % (bit, self.getLengthType(bit), self.getMaxLength(bit)))
+        type = self.getDataType(bit)
+        if type == 'nF':
+            value = value + 'F'
+            self._VALUES[bit] = value.zfill(self.getMaxLength(bit))
+        else:
+            self._VALUES[bit] = value.zfill(self.getMaxLength(bit))
+
+    def __setBitXFixedLength(self, bit, value):
+        """Method that set a bit with value in form N
+        It complete the size of the bit with a default value
+        Example: pack.setBit(3,'30000') -> Bit 3 is a N type, so this bit, in ASCII form need to has size = 6 (ISO especification) so the value 30000 size = 5 need to receive more "1" number.
+            In this case, will be "0" in the left. In the package, the bit will be sent like '030000'
+        @param: bit -> bit to be setted
+        @param: value -> value to be setted
+        @raise: ValueToLarge Exception
+        It's a internal method, so don't call!
+
+        this method is for  a x Fixed bit, where there is a charachter appended in front of the value
+        """
+
+        value = "%s" % value
+        length = self.getMaxLength(bit)
+
+
+        if len(value) > self.getMaxLength(bit):
+            value = '0' +  value[0:self.getMaxLength(bit)]
+            raise ValueToLarge('Error: value up to size! Bit[%s] of type %s limit size = %s' % (bit, self.getLengthType(bit), self.getMaxLength(bit)))
 
         self._VALUES[bit] = value.zfill(self.getMaxLength(bit))
+
 
 
     ################################################################################################
@@ -522,6 +589,8 @@ class AS2805:
                     res += " [%s] " % ReadableAscii(self.getBit(bit))
                 res += self.getBitName(bit)
                 res += '\n'
+
+                #print res
 
         return res
 
@@ -573,7 +642,7 @@ class AS2805:
         resp = ""
 
         resp += self.MESSAGE_TYPE_INDICATION
-        resp += self.BITMAP_BIN
+        resp += binascii.hexlify(self.BITMAP_BIN)
 
         for cont in range(0, 128):
             if self._VALUES[cont] <> self._EMPTY_VALUE:
@@ -656,29 +725,77 @@ class AS2805:
                 elif self.getLengthType(cont) == 'LLLLLL':
                     lengthIndicator = 6
 
-                if lengthIndicator >= 2:
+                if lengthIndicator >= 2 and lengthIndicator < 6 and self.getDataType(cont) != 'nF':
                     valueSize = int(strWithoutMtiBitmap[offset:offset + lengthIndicator])
                     if self.DEBUG == True:
                         print 'Variable Length Field (%s) Size = [%s]' % ('L' * lengthIndicator, valueSize)
 
                     if valueSize > self.getMaxLength(cont):
                         raise ValueToLarge("This bit is larger than the especification!")
-                    self._VALUES[cont] = strWithoutMtiBitmap[offset:offset + lengthIndicator] + strWithoutMtiBitmap[
-                                                                                                offset + lengthIndicator:offset + lengthIndicator + valueSize]
+
+                    if(lengthIndicator == 4 and self.getDataType(cont) == 'b'):
+                        valueSize = valueSize *2
+
+                    self._VALUES[cont] = strWithoutMtiBitmap[offset:offset + lengthIndicator] + strWithoutMtiBitmap[offset + lengthIndicator:offset + lengthIndicator + valueSize]
+
+                    if self.DEBUG == True:
+                        print '\tSetting bit [%s] Value=[%s]' % (cont, self._VALUES[cont])
+
+                    if valueSize%2 != 0:
+                        valueSize += 1
+                    offset += valueSize + lengthIndicator
+                elif lengthIndicator >= 2 and lengthIndicator < 6 and self.getDataType(cont) == 'nF':
+
+                    valueSize = int(strWithoutMtiBitmap[offset:offset + lengthIndicator])
+
+                    if self.DEBUG == True:
+                        print 'Variable Length Field (%s) Size = [%s]' % ('L' * lengthIndicator, valueSize)
+
+                    if valueSize > self.getMaxLength(cont):
+                        raise ValueToLarge("This bit is larger than the especification!")
+
+                    valueSize += 1
+                    self._VALUES[cont] = strWithoutMtiBitmap[offset:offset + lengthIndicator] + strWithoutMtiBitmap[offset + lengthIndicator:offset + lengthIndicator + valueSize]
 
                     if self.DEBUG == True:
                         print '\tSetting bit [%s] Value=[%s]' % (cont, self._VALUES[cont])
 
                     offset += valueSize + lengthIndicator
-                else:
+
+                elif self.getLengthType(cont) == 'F':
                     # Fixed Length Field
+
+                    self._VALUES[cont] = strWithoutMtiBitmap[offset:self.getMaxLength(cont) + offset]
+                    offset += self.getMaxLength(cont)
+
+
+                    if self.DEBUG == True:
+                        print 'Fixed Length Field Size = [%s]' % (self.getMaxLength(cont))
+                        print '\tSetting bit [%s] Value=[%s]' % (cont, self._VALUES[cont])
+                    """
+                elif self.getLengthType(cont) == 'XF':
+                    #offset +=1
+                    # Fixed Length Field with extra charachter in front
                     self._VALUES[cont] = strWithoutMtiBitmap[offset:self.getMaxLength(cont) + offset]
 
                     if self.DEBUG == True:
                         print 'Fixed Length Field Size = [%s]' % (self.getMaxLength(cont))
                         print '\tSetting bit [%s] Value=[%s]' % (cont, self._VALUES[cont])
-
                     offset += self.getMaxLength(cont)
+                    """
+                elif lengthIndicator == 6:
+                    valueSize = strWithoutMtiBitmap[offset:offset + 6]
+
+                    valueSize =  int(''.join(chr(int(valueSize[i:i+2], 16)) for i in range(0, len(valueSize), 2)))
+                    valueSize = valueSize *2
+                    if valueSize == 32:
+                        valueSize = 48
+
+                    #print strWithoutMtiBitmap
+                    self._VALUES[cont] = strWithoutMtiBitmap[offset:offset + 6] + strWithoutMtiBitmap[offset + 6:offset + 6 + valueSize]
+                    if self.DEBUG == True:
+                        print ('\tSetting bit %s value %s' % (cont, self._VALUES[cont]))
+                    offset += valueSize + 6
 
                     ################################################################################################
 
@@ -705,7 +822,7 @@ class AS2805:
 
 		@param: str -> complete AS2805 string
 		@raise: InvalidAS2805 Exception
-        """
+
         if len(iso) < 20:
             raise InvalidAS2805('This is not a valid iso!!')
         if self.DEBUG == True:
@@ -722,6 +839,22 @@ class AS2805:
         self.__getBitFromStr(iso[4 + len(self.BITMAP_HEX) / 2:])
         if self.DEBUG == True:
             print '_VALUES (after) %s ' % self._VALUES
+            """""
+        if len(iso) < 20:
+            raise InvalidAS2805('This is not a valid iso!!')
+        if self.DEBUG == True:
+            print 'ASCII to process <%s>' % iso
+
+        self.__setMTIFromStr(iso)
+        isoT = iso[4:]
+        self.__getBitmapFromStr(isoT)
+        self.__initializeBitsFromBitmapStr(self.BITMAP_HEX)
+        if self.DEBUG == True:
+            print 'This is the array of bits (before) %s ' % self._VALUES
+
+        self.__getBitFromStr(iso[4+len(self.BITMAP_HEX):])
+        if self.DEBUG == True:
+            print 'This is the array of bits (after) %s ' % self._VALUES
 
             ################################################################################################
 
@@ -820,7 +953,7 @@ class AS2805:
             if self.DEBUG == True:
                 print 'Pack Big-endian'
         else:
-            netIso = struct.pack('<h', len(asciiIso))
+           # netIso = struct.pack('<h', len(asciiIso))
             if self.DEBUG == True:
                 print 'Pack Little-endian'
 
@@ -873,9 +1006,8 @@ class AS2805:
             if self.DEBUG == True:
                 print 'Unpack Little-endian'
 
-        if len(iso) != (size[0] + 2):
-            raise InvalidAS2805(
-                'This is not a valid iso!!The AS2805 ASCII(%s) is less than the size %s!' % (len(iso[2:]), size[0]))
+        #if len(iso) != (size[0] + 2):
+            #raise InvalidAS2805('This is not a valid iso!!The AS2805 ASCII(%s) is less than the size %s!' % (len(iso[2:]), size[0]))
 
         self.setIsoContent(iso[2:])
 

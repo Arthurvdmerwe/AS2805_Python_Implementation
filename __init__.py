@@ -1,2 +1,1 @@
-if __name__ == '__main__':
-    pass
+__author__ = 'root'
