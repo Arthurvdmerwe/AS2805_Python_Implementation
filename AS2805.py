@@ -1,10 +1,11 @@
+__author__ = 'root'
 __author__ = 'arthurvandermerwe'
 
 import struct
-
-from Host_Node.AS2805Errors import *
 import binascii
 import string
+
+from Data_Structures.AS2805_Structs.AS2805Errors import *
 from Shared.ByteUtils import HexToByte, ByteToHex
 
 
@@ -50,126 +51,109 @@ class AS2805:
     """
     # Q = padding of the message - 0 / F or none
     # W = justification, left / right or none
-    _DEF[1] = ['BM', 'Bit Map Extended',                        'F',    8,  'b',    'X',    'none',  'none']
-    _DEF[2] = ['2', 'Primary Account Number (PAN)',             'LL',   19, 'n',    'c',    'F', 'left']
-    _DEF[3] = ['3', 'Processing Code',                          'F',    6,  'n',    'n',    '0',  'right']
-    _DEF[4] = ['4', 'Amount Transaction',                       'F',    12, 'n',    'c',    '0',  'right']
-    _DEF[5] = ['5', 'Amount Settlement',                        'F',    12, 'n',    'c',    '0',  'right']
-    _DEF[7] = ['7', 'Transmission Date and Time',               'F',    10, 'n',    'n',    '0',  'right']
-    _DEF[9] = ['9', 'Conversion Rate, Settlement',              'F',    8,  'n',    'n',    '0',  'right']
-    _DEF[10] = ['10', 'Conversion Rate, Cardholder Billing',    'F',    8,  'n',    'n',    '0',  'right']
-    _DEF[11] = ['11', 'Systems Trace Audit Number',             'F',    6,  'n',    'n',    '0',  'right']
-    _DEF[12] = ['12', 'Time, Local Transaction',                'F',    6,  'n',    'n',    '0',  'right']
-    _DEF[13] = ['13', 'Date, Local Transaction',                'F',    4,  'n',    'n',    '0',  'right']
-    _DEF[14] = ['14', 'Date, Expiration',                       'F',    4,  'n',    'n',    '0',  'right']
-    _DEF[15] = ['15', 'Date, Settlement',                       'F',    4,  'n',    'n',    '0',  'right']
-    _DEF[16] = ['16', 'Date, Conversion',                       'F',    4,  'n',    'n',    '0',  'right']
-    _DEF[18] = ['18', 'Merchant Type',                          'F',    4,  'n',    'n',    '0',  'right']
-    _DEF[19] = ['19', 'Acquiring Institution Country Code',     'F',    3,  'n',    'n',    '0',  'right']
-    _DEF[20] = ['20', 'PAN Extended Country Code',              'F',    3,  'n',    'n',    '0',  'right']
-    _DEF[21] = ['21', 'Forwarding Institution Country Code',    'F',    3,  'n',    'n',    '0',  'right']
-    _DEF[22] = ['22', 'POS Entry Mode',                         'F',    3,  'n',    'n',    '0',  'right']
-    _DEF[23] = ['23', 'Card Sequence Number',                   'F',    3,  'n',    'n',    '0',  'right']
-    _DEF[25] = ['25', 'POS Condition Code',                     'F',    2,  'n',    'n',    '0',  'right']
-    _DEF[28] = ['28', 'Amount, Transaction Fee',                'F',    9, 'xn',    'c',    '0',  'right']
-    _DEF[29] = ['29', 'Amount, Settlement Fee',                 'F',    8, 'xn',    'c',    '0',  'right']
-    _DEF[30] = ['30', 'Amount, Processing Fee',                 'F',    8, 'xn',    'c',    '0',  'right']
-    _DEF[31] = ['31', 'Amount, Settlement Processing Fee',      'F',    8, 'xn',    'c',    '0',  'right']
-    _DEF[32] = ['32', 'Acquiring Institution ID Code',         'LL',    11, 'n',    'c',    'F',   'left']
-    _DEF[33] = ['33', 'Forwarding Institution ID Code',        'LL',    11, 'n',    'c',    'F',   'left']
-    _DEF[34] = ['34', 'PAN Extended'                           'LL',    28,'ns',    'c',    'F',   'left']
-    _DEF[35] = ['35', 'Track 2 Data',                          'LL',    37, 'z',    'c',    'F',   'left']
-    _DEF[36] = ['36', 'Track 3 Data',                         '0LLL',   104, 'z',   'c',    'F',   'left']
-    _DEF[37] = ['37', 'Retrieval Reference Number',             'F',   12, 'an',    'x',    '0',  'right']
-    _DEF[38] = ['38', 'Authorization ID Response',              'F',    6, 'an',    'x',    '0',  'right']
-    _DEF[39] = ['39', 'Response Code',                          'F',    2, 'an',    'x',    '0',  'right']
-    _DEF[40] = ['40', 'Service Restriction Code',               'F',    3, 'an',    'x',    '0',  'right']
-    _DEF[41] = ['41', 'Card Acceptor Terminal ID',              'F',    8, 'an',    'x',    '0',  'right']
-    _DEF[42] = ['42', 'Card Acceptor ID Code',                  'F',   15, 'ans',    'x',    '0',  'right']
-    _DEF[43] = ['43', 'Card Acceptor Name Location',            'F',   40, 'an',    'x',    '0',  'right']
-    _DEF[44] = ['44', 'Additional Response Data',              'LL',  15, 'ans',    'x',    'F',   'left']
-    _DEF[47] = ['47', 'Additional Data ISO',                  'LLL', 999, 'ans',    'x',    'F',   'left']
-    _DEF[48] = ['48', 'Additional Data Private',              'LLL', 999, 'b',    'x',    'F',   'left']
-    _DEF[49] = ['49', 'Currency Code, Transaction',             'F',   3,   'n',    'n',    '0',  'right']
-    _DEF[50] = ['50', 'Currency Code, Settlement',              'F',   3,   'n',    'n',    '0',  'right']
-    _DEF[51] = ['51', 'Currency Code, Billing',                 'F',   3,   'n',    'n',    '0',  'right']
-    _DEF[52] = ['52', 'PIN Data',                               'F',    16, 'b',    'x',    '0',  'right']
-    _DEF[53] = ['53', 'Security Related Control Information',   'F',    16, 'n',    'n',    '0',  'right']
-    _DEF[54] = ['54', 'Additional Amounts',                   'LLL', 999, 'ans',    'x',    'F',   'left']
-    _DEF[55] = ['55', 'ICC Data',                             '0LLL',   999, 'b',   'x',    'F',   'left']
-    _DEF[56] = ['56', 'ISO Reserved',                         'LLL', 999, 'ans',    'x',    'F',   'left']
-    _DEF[57] = ['57', 'Amount Cash',                            'F',    12, 'n',    'n',    '0',   'right']
-    _DEF[58] = ['58', 'Ledger Balance',                         'F',    12, 'n',    'n',    '0',   'right']
-    _DEF[59] = ['59', 'Account Balance',                        'F',    12, 'n',    'n',    '0',   'right']
-    _DEF[60] = ['60', 'Private Data',                         'LLL',    999, 'ans',    'x',    'F', 'left']
-    _DEF[61] = ['61', 'Private Data',                         'LLL',    999, 'ans',    'x',    'F', 'left']
-    _DEF[62] = ['62', 'Private Data',                         'LLL',    999, 'ans',    'x',    'F', 'left']
-    _DEF[63] = ['63', 'Private Data',                         'LLL',    999, 'ans',    'x',    'F', 'left']
-    _DEF[64] = ['64', 'Message Authentication Code',            'F',     16, 'b',       'x',    '0',  'right']
-    _DEF[65] = ['65', 'Reserved for ISO Use',                   'F',     64, 'b',       'x',    '0',  'right']
-    _DEF[66] = ['66', 'Settlement Code',                        'F',      1, 'n',       'n',    '0',  'right']
-    _DEF[67] = ['67', 'Extended Payment Code',                  'F',      2, 'n',       'n',    '0',  'right']
-    _DEF[68] = ['68', 'Receiving Institution Country Code',     'F',      3, 'n',       'n',    '0',  'right']
-    _DEF[69] = ['69', 'Settlement Institution Country Code',    'F',      3, 'n',       'n',    '0',  'right']
-    _DEF[70] = ['70', 'Network Management Information Code',    'F',      3, 'n',       'n',    '0',  'right']
-    _DEF[71] = ['71', 'Message Number',                         'F',      4, 'n',       'n',    '0',  'right']
-    _DEF[72] = ['72', 'Message Number Last',                    'F',      4, 'n',       'n',    '0',  'right']
-    _DEF[73] = ['73', 'Date Action',                            'F',      6, 'n',       'n',    '0',  'right']
-    _DEF[74] = ['74', 'Credits, Number',                        'F',     10, 'n',       'n',    '0',  'right']
-    _DEF[75] = ['75', 'Credits, Reversal Number',               'F',     10, 'n',       'n',    '0',  'right']
-    _DEF[76] = ['76', 'Debits, Number',                         'F',     10, 'n',       'n',    '0',  'right']
-    _DEF[77] = ['77', 'Debits, Reversal Number',                'F',     10, 'n',       'n',    '0',  'right']
-    _DEF[78] = ['78', 'Transfer, Number',                       'F',     10, 'n',       'n',    '0',  'right']
-    _DEF[79] = ['79', 'Transfer, Reversal Number',              'F',     10, 'n',       'n',    '0',  'right']
-    _DEF[80] = ['80', 'Inquiries, Number',                      'F',     10, 'n',       'n',    '0',  'right']
-    _DEF[81] = ['81', 'Authorizations, Number',                 'F',     10, 'n',       'n',    '0',  'right']
-    _DEF[82] = ['82', 'Credits, Processing Fee Amount',         'F',     12, 'n',       'n',    '0',  'right']
-    _DEF[83] = ['83', 'Credits, Transaction Fee Amount',        'F',     12, 'n',       'n',    '0',  'right']
-    _DEF[84] = ['84', 'Debits, Processing Fee Amount',          'F',     12, 'n',       'n',    '0',  'right']
-    _DEF[85] = ['85', 'Debits, Transaction Fee Amount',         'F',     12, 'n',       'n',    '0',  'right']
-    _DEF[86] = ['86', 'Credits, Amount',                        'F',     16, 'n',       'n',    '0',  'right']
-    _DEF[87] = ['87', 'Credits, Reversal Amount',               'F',     16, 'n',       'n',    '0',  'right']
-    _DEF[88] = ['88', 'Debits, Amount',                         'F',     16, 'n',       'n',    '0',  'right']
-    _DEF[89] = ['89', 'Debits, Reversal Amount',                'F',     16, 'n',       'n',    '0',  'right']
-    _DEF[90] = ['90', 'Original Data Elements',                 'F',     42, 'n',       'n',    '0',  'right']
-    _DEF[91] = ['91', 'File Update Code',                       'F',     1, 'an',       'x',    '0',  'right']
-    _DEF[92] = ['92', 'File Security Code',                     'F',     2, 'an',       'x',    '0',  'right']
-    _DEF[93] = ['93', 'Response Indicator',                     'F',     5, 'an',       'x',    '0',  'right']
-    _DEF[94] = ['94', 'Service Indicator',                      'F',     7, 'an',       'x',    '0',  'right']
-    _DEF[95] = ['95', 'Replacement Amounts',                    'F',     42,'an',       'x',    '0',  'right']
-    _DEF[96] = ['96', 'Message Security Code',                  'F',     64, 'b',       'x',    '0',  'right']
-    _DEF[97] = ['97', 'Amount, Net Settlement',                 'F',      16, 'xn',    'c',   '0',  'right']
-    _DEF[98] = ['98', 'Payee'                                  'LL',     25, 'ans',      'x',   'F', 'left']
-    _DEF[99] = ['99', 'Settlement Institution ID Code',         'LL',       11, 'n',       'n', 'F', 'left']
-    _DEF[100] = ['100', 'Receiving Institution ID Code',        'LL',       11, 'n',       'n', 'F', 'left']
-    _DEF[101] = ['101', 'File Name',                            'LL',      17,  'ans',     'x', 'F', 'left']
-    _DEF[102] = ['102', 'Account Identification 1',             'LL',      28,  'ans',     'x', 'F', 'left']
-    _DEF[103] = ['103', 'Account Identification 2',             'LL',      28,  'ans',     'x', 'F', 'left']
-    _DEF[104] = ['104', 'Transaction Description',             'LLL',     100,  'ans',     'x', 'F', 'left']
-    _DEF[105] = ['105', 'Reserved for ISO use',                'LLL',     999,  'ans',     'x', 'F', 'left']
-    _DEF[106] = ['106', 'Reserved for ISO use',                'LLL',     999,  'ans',     'x', 'F', 'left']
-    _DEF[107] = ['107', 'Reserved for ISO use',                'LLL',     999,  'ans',     'x', 'F', 'left']
-    _DEF[108] = ['108', 'Reserved for ISO use',                'LLL',     999,  'ans',     'x', 'F', 'left']
-    _DEF[109] = ['109', 'Reserved for ISO use',                'LLL',     999,  'ans',     'x', 'F', 'left']
-    _DEF[110] = ['110', 'Reserved for ISO use',                'LLL',     999,  'ans',     'x', 'F', 'left']
-    _DEF[111] = ['111', 'Reserved for ISO use',                'LLL',     999,  'ans',     'x', 'F', 'left']
-    _DEF[112] = ['112', 'Key Management Data',                 '0LLL',    999,    'b',     'x', 'F', 'left']
-    _DEF[113] = ['113', 'Reserved for National use',           'LLL',     999,  'ans',     'x', 'F', 'left']
-    _DEF[114] = ['114', 'Reserved for National use',           'LLL',     999,  'ans',     'x', 'F', 'left']
-    _DEF[115] = ['115', 'Reserved for National use',           'LLL',     999,  'ans',     'x', 'F', 'left']
-    _DEF[116] = ['116', 'Reserved for National use',           'LLL',     999,  'ans',     'x', 'F', 'left']
-    _DEF[117] = ['117', 'Card Status Update Code',               'F',         2,  'ans',   'x', '0',  'right']
-    _DEF[118] = ['118', 'Cash Total Number',                    '0LLL',      10, 'n',       'n',  'F', 'left']
-    _DEF[119] = ['119', 'Cash Total Amount',                    '0LLL',      10, 'n',       'n',  'F', 'left']
-    _DEF[120] = ['120',  'Reserved for Private Use',            'LLL',      999, 'ans',     'x', 'F', 'left']
-    _DEF[121] = ['121',  'Reserved for Private Use',            'LLL',      999, 'ans',     'x', 'F', 'left']
-    _DEF[122] = ['122',  'Reserved for Private Use',            'LLL',      999, 'ans',     'x', 'F', 'left']
-    _DEF[123] = ['123',  'Reserved for Private Use',            'LLL',      999, 'ans',     'x', 'F', 'left']
-    _DEF[124] = ['124',  'Reserved for Private Use',            'LLL',      999, 'ans',     'x', 'F', 'left']
-    _DEF[125] = ['125',  'Reserved for Private Use',            'LLL',      999, 'ans',     'x', 'F', 'left']
-    _DEF[126] = ['126',  'Reserved for Private Use',            'LLL',      999, 'ans',     'x', 'F', 'left']
-    _DEF[127] = ['127',  'Reserved for Private Use',            'LLL',      999, 'ans',     'x', 'F', 'left']
-    _DEF[128] = ['128',  'MAC Extended',                           'F',       16, 'b',       'x', '0',  'right']
+    _DEF[1] = ['BM', 'Bit Map Extended',                         'b',    '8']
+    _DEF[2] = ['2', 'Primary Account Number (PAN)',              'n', '..19']
+    _DEF[3] = ['3', 'Processing Code',                           'n',    '6']
+    _DEF[4] = ['4', 'Amount Transaction',                        'n',   '12']
+    _DEF[5] = ['5', 'Amount Settlement',                         'n',   '12']
+    _DEF[6] = ['6', 'Amount Cardholder Billing',                 'n',   '12']
+    _DEF[7] = ['7', 'Transmission Date and Time',                'n',   '10']
+    _DEF[8] = ['8', 'Amount Cardholder Billing Fee',             'n',    '8']
+    _DEF[9] = ['9', 'Conversion Rate, Settlement',               'n',    '8']
+    _DEF[10] = ['10', 'Conversion Rate, Cardholder Billing',     'n',    '8']
+    _DEF[11] = ['11', 'Systems Trace Audit Number',              'n',    '8']
+    _DEF[12] = ['12', 'Time, Local Transaction',                 'n',    '6']
+    _DEF[13] = ['13', 'Date, Local Transaction',                 'n',    '4']
+    _DEF[14] = ['14', 'Date, Expiration',                        'n',    '4']
+    _DEF[15] = ['15', 'Date, Settlement',                        'n',    '4']
+    _DEF[16] = ['16', 'Date, Conversion',                        'n',    '4']
+    _DEF[17] = ['17', 'Date, Capture',                           'n',    '4']
+    _DEF[18] = ['18', 'Merchant Type',                           'n',    '4']
+    _DEF[19] = ['19', 'Acquiring Institution Country Code',      'n',    '3']
+    _DEF[20] = ['20', 'PAN Extended Country Code',               'n',    '3']
+    _DEF[21] = ['21', 'Forwarding Institution Country Code',     'n',    '3']
+    _DEF[22] = ['22', 'POS Entry Mode',                          'n',    '3']
+    _DEF[23] = ['23', 'Card Sequence Number',                    'n',    '3']
+    _DEF[24] = ['24', 'International Identifier',                'n',    '3']
+    _DEF[25] = ['25', 'POS Condition Code',                      'n',    '2']
+    _DEF[26] = ['26', 'POS PIN Capture Code',                    'n',    '2']
+    _DEF[27] = ['27', 'Auth ID Response Length',                 'n',    '1']
+    _DEF[28] = ['28', 'Amount, Transaction Fee',               'x+n',    '9']
+    _DEF[29] = ['29', 'Amount, Settlement Fee',                'x+n',    '9']
+    _DEF[30] = ['30', 'Amount, Processing Fee',                'x+n',    '9']
+    _DEF[31] = ['31', 'Amount, Settlement Processing Fee',     'x+n',    '9']
+    _DEF[32] = ['32', 'Acquiring Institution ID Code',          'n',  '..11']
+    _DEF[33] = ['33', 'Forwarding Institution ID Code',         'n',  '..11']
+    _DEF[34] = ['34', 'PAN Extended'                            'ns', '..28']
+    _DEF[35] = ['35', 'Track 2 Data',                           'z',  '..37']
+    _DEF[36] = ['36', 'Track 3 Data',                           'z','...104']
+    _DEF[37] = ['37', 'Retrieval Reference Number',            'an',    '12']
+    _DEF[38] = ['38', 'Authorization ID Response',             'an',     '6']
+    _DEF[39] = ['39', 'Response Code',                         'an',     '2']
+    _DEF[40] = ['40', 'Service Restriction Code',              'an',     '3']
+    _DEF[41] = ['41', 'Card Acceptor Terminal ID',             'an',     '8']
+    _DEF[42] = ['42', 'Card Acceptor ID Code',                 'ans',   '15']
+    _DEF[43] = ['43', 'Card Acceptor Name Location',           'ans',   '40']
+    _DEF[44] = ['44', 'Additional Response Data',              'ans', '..25']
+    _DEF[45] = ['45', 'Track 1 Data',                          'ans', '..76']
+    _DEF[46] = ['46', 'Additional  Data ISO ',                'ans','...999']
+    _DEF[47] = ['47', 'Additional Data National',             'ans','...999']
+    _DEF[48] = ['48', 'Additional Data Private',              'ans','...999']
+    _DEF[49] = ['49', 'Currency Code, Transaction',              'n',    '3']
+    _DEF[50] = ['50', 'Currency Code, Settlement',               'n',    '3']
+    _DEF[51] = ['51', 'Currency Code, Billing',                  'n',    '3']
+    _DEF[52] = ['52', 'PIN Data',                                'b',   '16']
+    _DEF[53] = ['53', 'Security Related Control Information',    'n',   '16']
+    _DEF[54] = ['54', 'Additional Amounts',                    'an','...120']
+    _DEF[55] = ['55', 'ICC Data',                               'b','...999']
+    _DEF[57] = ['57', 'Amount Cash',                            'n',    '12']
+    _DEF[58] = ['58', 'Ledger Balance',                         'n',    '12']
+    _DEF[59] = ['59', 'Account Balance',                        'n',    '12']
+    _DEF[64] = ['64', 'Message Authentication Code',            'b',    '16']
+    _DEF[66] = ['66', 'Settlement Code',                         'n',    '1']
+    _DEF[67] = ['67', 'Extended Payment Code',                   'n',    '2']
+    _DEF[68] = ['68', 'Receiving Institution Country Code',      'n',    '3']
+    _DEF[69] = ['69', 'Settlement Institution Country Code',     'n',    '3']
+    _DEF[70] = ['70', 'Network Management Information Code',     'n',    '3']
+    _DEF[71] = ['71', 'Message Number',                          'n',    '4']
+    _DEF[72] = ['72', 'Message Number Last',                     'n',    '4']
+    _DEF[73] = ['73', 'Date Action',                             'n',    '6']
+    _DEF[74] = ['74', 'Credits, Number',                         'n',   '10']
+    _DEF[75] = ['75', 'Credits, Reversal Number',                'n',   '10']
+    _DEF[76] = ['76', 'Debits, Number',                          'n',   '10']
+    _DEF[77] = ['77', 'Debits, Reversal Number',                 'n',   '10']
+    _DEF[78] = ['78', 'Transfer, Number',                        'n',   '10']
+    _DEF[79] = ['79', 'Transfer, Reversal Number',               'n',   '10']
+    _DEF[80] = ['80', 'Inquiries, Number',                       'n',   '10']
+    _DEF[81] = ['81', 'Authorizations, Number',                  'n',   '10']
+    _DEF[82] = ['82', 'Credits, Processing Fee Amount',          'n',   '12']
+    _DEF[83] = ['83', 'Credits, Transaction Fee Amount',         'n',   '12']
+    _DEF[84] = ['84', 'Debits, Processing Fee Amount',           'n',   '12']
+    _DEF[85] = ['85', 'Debits, Transaction Fee Amount',          'n',   '12']
+    _DEF[86] = ['86', 'Credits, Amount',                         'n',   '16']
+    _DEF[87] = ['87', 'Credits, Reversal Amount',                'n',   '16']
+    _DEF[88] = ['88', 'Debits, Amount',                          'n',   '16']
+    _DEF[89] = ['89', 'Debits, Reversal Amount',                 'n',   '16']
+    _DEF[90] = ['90', 'Original Data Elements',                  'n',   '42']
+    _DEF[91] = ['91', 'File Update Code',                        'an',   '1']
+    _DEF[92] = ['92', 'File Security Code',                      'an',   '2']
+    _DEF[93] = ['93', 'Response Indicator',                      'an',   '5']
+    _DEF[94] = ['94', 'Service Indicator',                       'an',   '7']
+    _DEF[95] = ['95', 'Replacement Amounts',                     'an',  '42']
+    _DEF[96] = ['96', 'Message Security Code',                   'b',   '64']
+    _DEF[97] = ['97', 'Amount, Net Settlement',                  'x+n', '16']
+    _DEF[98] = ['98', 'Payee'                                   'ans','..25']
+    _DEF[99] = ['99', 'Settlement Institution ID Code',          'n', '..11']
+    _DEF[100] = ['100', 'Receiving Institution ID Code',         'n', '..11']
+    _DEF[101] = ['101', 'File Name',                            'ans','..17']
+    _DEF[102] = ['102', 'Account Identification 1',             'ans','..28']
+    _DEF[103] = ['103', 'Account Identification 2',             'ans','..28']
+    _DEF[104] = ['104', 'Transaction Description',            'ans','...100']
+    _DEF[112] = ['112', 'Key Management Data',                 'b', '...999']
+    _DEF[117] = ['117', 'Card Status Update Code',              'an',    '2']
+    _DEF[118] = ['118', 'Cash Total Number',                     'n',   '10']
+    _DEF[119] = ['119', 'Cash Total Amount',                     'n',   '16']
+    _DEF[128] = ['128',  'MAC Extended',                         'b',   '16']
 
 
     def __init__(self, iso="", debug=False):
@@ -220,29 +204,6 @@ class AS2805:
 
     ################################################################################################
 
-    def getDataType(self, bit):
-        """Method that return the bit value type
-        @param: bit -> Bit that will be searched and whose value type will be returned
-        @return: str that indicate the valuye type of the bit
-        """
-        return self._DEF[bit][4]
-
-
-    ################################################################################################
-
-
-    def getDataFormat(self, bit):
-        return self._DEF[bit][5]
-
-    ################################################################################################
-    def getAllighnment(self, bit):
-        return self._DEF[bit][7]
-
-    ################################################################################################
-    def getPadValue(self, bit):
-        return self._DEF[bit][6]
-
-    ################################################################################################
 
     def getBitName(self, bit):
         """Method that return the large bit name
@@ -276,7 +237,7 @@ class AS2805:
         It's a internal method, so don't call!
         """
 
-        if self.DEBUG == True:
+        if self.DEBUG:
             print 'Init bitmap'
 
         if len(self.BITMAP) == 16:
@@ -293,7 +254,7 @@ class AS2805:
         """Method that inicialize/reset a internal array used to save bits and values
         It's a internal method, so don't call!
         """
-        if self.DEBUG == True:
+        if self.DEBUG:
             print 'Init bitmap_values'
 
         if len(self._VALUES) == 129:
@@ -302,6 +263,19 @@ class AS2805:
         else:
             for cont in range(0, 129):
                 self._VALUES.append(self._EMPTY_VALUE)
+
+
+
+    def __get_AS2805_Valiable_Length_Prefix(self, bit):
+
+        Length_Indicator = str(self._DEF[bit][3])
+
+
+
+
+
+
+
 
 
                 ################################################################################################
@@ -314,26 +288,30 @@ class AS2805:
         @return: True/False default True -> To be used in the future!
         @raise: BitInexistent Exception, ValueToLarge Exception
         """
+
+
+
         if bit < 1 or bit > 129:
             raise BitInexistent("Bit number %s dosen't exist!" % bit)
 
-        if self.DEBUG == True:
+        if self.DEBUG:
             print 'Setting Bit %s (%s) = [%s]' % (bit, self.getBitName(bit), ReadableAscii(value))
 
+        Length_Indicator = str(self._DEF[bit][3]).count('.')
 
-        if self.getLengthType(bit) == 'F':
+        if Length_Indicator == 0:
             self.__setBitFixedLength(bit, value)
-        elif self.getLengthType(bit) == 'LL':
-            self.__setBitVariableLength(bit, value, 2)
-        elif self.getLengthType(bit) == 'LLL':
-            self.__setBitVariableLength(bit, value, 3)
-        elif self.getLengthType(bit) == '0LLL':
-            self.__setBitVariableLength(bit, value, 4)
+        else:
+            self.__setBitVariableLength(bit, value)
+
+        if self.DEBUG:
+            print 'Bit was set to %s (%s) = [%s]' % (bit, self.getBitName(bit), str(self._VALUES[bit]))
+
 
 
         #Continuation bit?
         if bit > 64:
-            self.BITMAP[0] = self.BITMAP[0] | self._TMP[2] # need to set bit 1 of first "bit" in bitmap
+            self.BITMAP[0] |= self._TMP[2]  # need to set bit 1 of first "bit" in bitmap
 
         if (bit % 8) == 0:
             pos = (bit / 8) - 1
@@ -342,7 +320,7 @@ class AS2805:
 
         #need to check if the value can be there .. AN , N ... etc ... and the size
 
-        self.BITMAP[pos] = self.BITMAP[pos] | self._TMP[(bit % 8) + 1]
+        self.BITMAP[pos] |= self._TMP[(bit % 8) + 1]
 
         return True
 
@@ -407,7 +385,7 @@ class AS2805:
 
             for x in range(0,32,2):
                     if (int(bitmap[0:2],16) & self._BIT_POSITION_1) != self._BIT_POSITION_1: # Only 1 bitmap
-                            if self.DEBUG == True:
+                            if self.DEBUG:
                                     print 'Token[%d] %s converted to int is = %s' %(x, bitmap[x:x+2], int(bitmap[x:x+2],16))
 
                             self.BITMAP_HEX += bitmap[x:x+2]
@@ -415,7 +393,7 @@ class AS2805:
                             if x == 14:
                                     break
                     else: # Second bitmap
-                            if self.DEBUG == True:
+                            if self.DEBUG:
                                     print 'Token[%d] %s converted to int is = %s' %(x, bitmap[x:x+2], int(bitmap[x:x+2],16))
 
                             self.BITMAP_HEX += bitmap[x:x+2]
@@ -430,12 +408,12 @@ class AS2805:
         Usualy is used to debug things.
         @param: bitmap -> bitmap str to be analized and translated to "bits"
         """
-        bits = self.__initializeBitsFromBitmapStr(bitmap)
+        bits = self.__initializeBitsFromBitmapStr()
         print 'Bits inside %s  = %s' % (bitmap, bits)
 
     ################################################################################################
 
-    def __initializeBitsFromBitmapStr(self, bitmap):
+    def __initializeBitsFromBitmapStr(self):
         """Method that receive a bitmap str, process it, and prepare AS2805 object to understand and "see" the bits and values inside the ISO ASCII package.
         It's a internal method, so don't call!
         @param: bitmap -> bitmap str to be analized and translated to "bits"
@@ -447,19 +425,19 @@ class AS2805:
                 #print 'Value (%d)-> %s & %s = %s' % (d,self.BITMAP[c] , self._TMP[d], (self.BITMAP[c] & self._TMP[d]) )
                 if (self.BITMAP[c] & self._TMP[d]) == self._TMP[d]:
                     if d == 1: #  e o 8 bit
-                        if self.DEBUG == True:
+                        if self.DEBUG:
                             print 'Bit %s is present !!!' % ((c + 1) * 8)
                         bits.append((c + 1) * 8)
                         self._VALUES[(c + 1) * 8] = 'X'
                     else:
                         if (c == 0) & (d == 2): # Continuation bit
-                            if self.DEBUG == True:
+                            if self.DEBUG:
                                 print 'Bit 1 is present !!!'
 
                             bits.append(1)
 
                         else:
-                            if self.DEBUG == True:
+                            if self.DEBUG:
                                 print 'Bit %s is present !!!' % (c * 8 + d - 1)
 
                             bits.append(c * 8 + d - 1)
@@ -482,19 +460,19 @@ class AS2805:
             #					print 'Value (%d)-> %s & %s = %s' % (d,self.BITMAP[c] , self._TMP[d], (self.BITMAP[c] & self._TMP[d]) )
                 if (self.BITMAP[c] & self._TMP[d]) == self._TMP[d]:
                     if d == 1: #  e o 8 bit
-                        if self.DEBUG == True:
+                        if self.DEBUG:
                             print 'Bit %s is present !!!' % ((c + 1) * 8)
 
                         bits.append((c + 1) * 8)
                     else:
                         if (c == 0) & (d == 2): # Continuation bit
-                            if self.DEBUG == True:
+                            if self.DEBUG:
                                 print 'Bit 1 is present !!!'
 
                             bits.append(1)
 
                         else:
-                            if self.DEBUG == True:
+                            if self.DEBUG:
                                 print 'Bit %s is present !!!' % (c * 8 + d - 1)
 
                             bits.append(c * 8 + d - 1)
@@ -505,131 +483,44 @@ class AS2805:
 
     ################################################################################################
 
-    def __setBitVariableLength(self, bit, value, length):
-        """Method that set a bit with value in form LL
-        It put the size in front of the value
-        Example: pack.setBit(99,'123') -> Bit 99 is a LL type, so this bit, in ASCII form need to be 03123. To understand, 03 is the size of the information and 123 is the information/value
-        @param: bit -> bit to be setted
-        @param: value -> value to be setted
-        @raise: ValueToLarge Exception
-        It's a internal method, so don't call!
-        """
+    def __setBitVariableLength(self, bit, value):
 
-        value = "%s" % value
+        value_data = self.__set_Octet_Data(value)
+        length_data = self.__setLengthIndicator(bit, len(value_data))
 
-        if len(value) > 10 ** length - 1:
-            raise ValueToLarge('Error: value up to size! Bit[%s] of type %s limit size = %s' % (
-                bit, self.getLengthType(bit), self.getMaxLength(bit)))
-
-        if len(value) > self.getMaxLength(bit):
-            raise ValueToLarge('Error: value up to size! Bit[%s] of type %s limit size = %s' % (
-                bit, self.getLengthType(bit), self.getMaxLength(bit)))
-
-
-
-        padding = self.getPadValue(bit)
-        type = self.getDataType(bit)
-        alignment = self.getAllighnment(bit)
-        size = "%s" % len(value)
-
-        if type == 'an' or type == 'ans':
-            value = binascii.hexlify(value)
-        if type == 'b':
-            size = str(int(size) / 2)
-
-
-
-        #Variable string in need of padding
-        if int(size)%2 != 0:
-            if alignment == 'left':
-                 value = value + padding
-            elif alignment == 'right':
-                value = padding + value
-
-        if (type == 'an' or type == 'ans' or type == 'b') and self.getLengthType(bit) != '0LLL':
-
-            size = binascii.hexlify(size.zfill(length))
-
-        if self.getLengthType(bit) == '0LLL':
-            size = str(int(size) / 2)
-
-
-        self._VALUES[bit] = "%s%s" % (size.zfill(length), value)
+        self._VALUES[bit] = "%s%s" % (length_data, value_data)
         #print "Setting Bits: " + self._VALUES[bit] + " type: " + type + " Variable"
+
+
+
+    def __setLengthIndicator(self, bit, length):
+        if (str(self._DEF[bit][3]).count('.') == 3) and  (self._DEF[bit][2] == 'b'):#0LLL 2 octets
+            return str(length).zfill(2).encode('hex')
+
+        elif (str(self._DEF[bit][3]).count('.') == 3) and  (self._DEF[bit][2] == 'n' or self._DEF[bit][2] == 'z'): #0LLL 2 octets
+            return str(length).zfill(2).encode('hex')
+
+        elif (str(self._DEF[bit][3]).count('.') == 3) and (self._DEF[bit][2] == 'a' or self._DEF[bit][2] == 'ans' or self._DEF[bit][2] == 'ns' or self._DEF[bit][2] == 'x'): #LLL 3 octets
+            return str(length).zfill(3).encode('hex')
+
+        elif (str(self._DEF[bit][3]).count('.') == 2) and  (self._DEF[bit][2] == 'n' or self._DEF[bit][2] == 'z'): #LL 2 octets
+            return str(length).zfill(2).encode('hex')
+
+        elif (str(self._DEF[bit][3]).count('.') == 2) and (self._DEF[bit][2] == 'a' or self._DEF[bit][2] == 'ans' or self._DEF[bit][2] == 'ns' or self._DEF[bit][2] == 'x'): #LL 2 octets
+            return str(length).zfill(2).encode('hex')
+
+
+    def __set_Octet_Data(self, value):
+        return str(value).encode('hex')
+
 
 
 
 
     def __setBitFixedLength(self, bit, value):
-        """Method that set a bit with value in form N
-        It complete the size of the bit with a default value
-        Example: pack.setBit(3,'30000') -> Bit 3 is a N type, so this bit, in ASCII form need to has size = 6 (ISO especification) so the value 30000 size = 5 need to receive more "1" number.
-            In this case, will be "0" in the left. In the package, the bit will be sent like '030000'
-        @param: bit -> bit to be setted
-        @param: value -> value to be setted
-        @raise: ValueToLarge Exception
-        It's a internal method, so don't call!
-        """
-
-        value = "%s" % value
-
-
-
-        #if len(value) > self.getMaxLength(bit):
-            #value = value[0:self.getMaxLength(bit)]
-            #raise ValueToLarge('Error: value up to size! Bit[%s] of type %s limit size = %s' % (bit, self.getLengthType(bit), self.getMaxLength(bit)))
-
-
-
-
-        length = self.getMaxLength(bit)
-        type = self.getDataType(bit)
-        format = self.getDataFormat(bit)
-        padding = self.getPadValue(bit)
-        alignment = self.getAllighnment(bit)
-
-        if type == 'an' or type == 'ans':
-
-            size = "%s" % len(value)
-            #if int(size)%2 != 0:
-            #    size = int(size) + 1
-            if alignment == 'left':
-                value = value.ljust(int(size), padding)
-            elif alignment == 'right':
-                value = value.rjust(int(size), padding)
-            value = binascii.hexlify(value)
-        size = "%s" % len(value)
-
-        if type == 'b':
-            size = "%s" % length
-            if int(size)%2 != 0:
-                size = int(size) + 1
-            if alignment == 'left':
-                value = value.ljust(int(size), padding)
-            elif alignment == 'right':
-                value = value.rjust(int(size), padding)
-
-        size = "%s" % len(value)
-
-
-        if type == 'xn':#xn type
-            number_type = binascii.hexlify(value[0:1])
-            value = number_type + value[1:]
-
-
-
-
-        #String string in need of padding
-        if int(size)%2 != 0:
-            size = int(size) + 1
-        if alignment == 'left':
-            value = value.ljust(int(size), padding)
-        elif alignment == 'right':
-            value = value.rjust(int(size), padding)
-
-        self._VALUES[bit] = value
-        #print "Setting Bits: " + self._VALUES[bit] + " type: " + type + " Fixed"
-
+        result = self.__set_Octet_Data(value)
+        #bit_limit = int(self.getMaxLength(bit))
+        self._VALUES[bit] = result
 
 
     ################################################################################################
@@ -651,24 +542,10 @@ class AS2805:
 
         for bit in range(0, 129):
             if self._VALUES[bit] <> self._EMPTY_VALUE:
-                res += '  '
-                if self.getLengthType(bit) == 'LL':
-                    res += "[LL     "
-                elif self.getLengthType(bit) == 'LLL':
-                    res += "[LLL    "
-                elif self.getLengthType(bit) == '0LLL':
-                    res += "[0LLL   "
-                else:
-                    res += "[Fixed  "
-                res += self.getDataType(bit)
-                res += " " * (5 - len(self.getDataType(bit)))
-                res += "%6d] " % self.getMaxLength(bit)
-                res += ("%s" % bit)
-                #PCI-DSS Masking of card holder data
-                if bit == 2:    # PAN
-                    res += " [%s] " % ReadableAscii(self.getBit(bit))
-                else:
-                    res += " [%s] " % ReadableAscii(self.getBit(bit))
+
+                res += " [%s] " % bit
+                res += " [%s%s ] " % (self._DEF[bit][2], self._DEF[bit][3])
+                res += " [%s] " % ReadableAscii(self.getBit(bit))
                 res += self.getBitName(bit)
                 res += '\n'
 
@@ -739,12 +616,12 @@ class AS2805:
         """Method that get the first 4 characters to be the MTI.
          It's a internal method, so don't call!
          """
-        if self.DEBUG == True:
+        if self.DEBUG:
             print '__setMTIFromStr(%s)' % ReadableAscii(iso)
 
         self.MESSAGE_TYPE_INDICATION = iso[0:4]
 
-        if self.DEBUG == True:
+        if self.DEBUG:
             print 'MTI found was [%s]' % self.MESSAGE_TYPE_INDICATION
 
             ################################################################################################
@@ -784,93 +661,80 @@ class AS2805:
         It's a internal method, so don't call!
         """
 
-        if self.DEBUG == True:
+        if self.DEBUG:
             print '__getBitFromStr(%s)' % ReadableAscii(strWithoutMtiBitmap)
+
+
+
+
 
         offset = 0
         # jump bit 1 because it was alread defined in the "__initializeBitsFromBitmapStr"
         for cont in range(2, 129):
             if self._VALUES[cont] <> self._EMPTY_VALUE:
-                if self.DEBUG == True:
+                if self.DEBUG:
                     print 'String = %s offset = %s bit = %s' % (strWithoutMtiBitmap[offset:], offset, cont)
 
-                lengthIndicator = 0
+                if cont == 55:
+                    pass
 
-                if self.getLengthType(cont) == 'LL':
-                    lengthIndicator = 2
-                elif self.getLengthType(cont) == 'LLL':
-                    lengthIndicator = 3
-                elif self.getLengthType(cont) == '0LLL':
-                    lengthIndicator = 4
+                #valiable length field
+                if str(self._DEF[cont][3]).count('.') > 0:
+                    valueSize = 0
 
+                    if (str(self._DEF[cont][3]).count('.') == 3)   and  (self._DEF[cont][2] == 'b'):#0LLL 2 octets
+                        lengthIndicator = 4
 
+                    elif (str(self._DEF[cont][3]).count('.') == 3) and  (self._DEF[cont][2] == 'n' or self._DEF[cont][2] == 'z'): #0LLL 2 octets
+                        lengthIndicator = 4
 
-                if lengthIndicator >= 2 and lengthIndicator <= 4 :
+                    elif (str(self._DEF[cont][3]).count('.') == 3) and (self._DEF[cont][2] == 'a' or self._DEF[cont][2] == 'ans' or self._DEF[cont][2] == 'ns' or self._DEF[cont][2] == 'x'): #LLL 3 octets
+                        lengthIndicator = 6
 
+                    elif (str(self._DEF[cont][3]).count('.') == 2) and  (self._DEF[cont][2] == 'n' or self._DEF[cont][2] == 'z'): #LL 2 octets
+                        lengthIndicator = 4
 
-                    if self.getDataType(cont) == 'an' or self.getDataType(cont) == 'ans':
-                        lengthIndicator *= 2
-                        valueSize = int(strWithoutMtiBitmap[offset:offset + lengthIndicator].decode('hex'))
-                        valueSize = valueSize * 2
-
-
-                    elif self.getDataType(cont) == 'b':
-
-                        if self.getLengthType(cont) == '0LLL':
-
-                            valueSize = int(strWithoutMtiBitmap[offset:offset + lengthIndicator])
-                        else:
-                            lengthIndicator *= 2
-                            valueSize = int(strWithoutMtiBitmap[offset:offset + lengthIndicator].decode('hex'))
-                            valueSize = valueSize*2
-
-                    elif self.getDataType(cont) == 'n':
-                        valueSize = int(strWithoutMtiBitmap[offset:offset + lengthIndicator])
+                    elif (str(self._DEF[cont][3]).count('.') == 2) and (self._DEF[cont][2] == 'a' or self._DEF[cont][2] == 'ans' or self._DEF[cont][2] == 'ns' or self._DEF[cont][2] == 'x'): #LL 2 octets
+                        lengthIndicator = 4
 
 
-                    else:
-                        valueSize = int(strWithoutMtiBitmap[offset:offset + lengthIndicator])
 
-
-                    if self.DEBUG == True:
-                        print 'Variable Length Field (%s) Size = [%s]' % ('L' * lengthIndicator, valueSize)
 
                     if valueSize > self.getMaxLength(cont):
                         raise ValueToLarge("This bit is larger than the specification!")
 
-                    if valueSize%2 != 0:
-                        valueSize += 1
+                    valueSize = int(binascii.unhexlify(strWithoutMtiBitmap[offset:offset + lengthIndicator]))
+                    #valueSize *= 2
+
+                    if self.DEBUG:
+                        print 'Variable Length Field (%s) Size = [%s]' % ('L' * lengthIndicator, valueSize / 2)
+
+
+                    if valueSize > self.getMaxLength(cont):
+                        raise ValueToLarge("This bit is larger than the specification!")
+
 
                     self._VALUES[cont] = strWithoutMtiBitmap[offset:offset + lengthIndicator] + strWithoutMtiBitmap[offset + lengthIndicator:offset + lengthIndicator + valueSize]
 
-                    if self.DEBUG == True:
-                        print '\tSetting bit [%s] Value=[%s]' % (cont, self._VALUES[cont])
-
-
+                    if self.DEBUG:
+                        print '\tSetting bit [%s] Value=[%s]' % (cont, binascii.unhexlify(self._VALUES[cont]))
                     offset += valueSize + lengthIndicator
 
+                #fixed length field
+                else:
+
+                    length = int(self.getMaxLength(cont))
+
+                    length *= 2
+                    new_offset = length + offset
+
+                    self._VALUES[cont] = strWithoutMtiBitmap[offset: new_offset]
+                    offset += length
 
 
-                elif self.getLengthType(cont) == 'F':
-
-                    length = self.getMaxLength(cont)
-                    if length % 2 != 0:
-                        length += 1
-
-
-                    if self.getDataType(cont) == 'an' or self.getDataType(cont) == 'ans' :
-                        length *= 2
-                        self._VALUES[cont] = strWithoutMtiBitmap[offset:length + offset]
-                        offset += length
-                    else:
-                        #print "Offset: " +  strWithoutMtiBitmap[offset:]
-                        self._VALUES[cont] = strWithoutMtiBitmap[offset:length + offset]
-                        offset += length
-
-
-                    if self.DEBUG == True:
-                        print 'Fixed Length Field Size = [%s]' % (length)
-                        print '\tSetting bit [%s] Value=[%s]' % (cont, self._VALUES[cont])
+                    if self.DEBUG:
+                        print 'Fixed Length Field Size = [%s]' % (length / 2)
+                        print '\tSetting bit [%s] Value=[%s]' % (cont, binascii.unhexlify(str(self._VALUES[cont])))
 
 
                     ################################################################################################
@@ -879,62 +743,36 @@ class AS2805:
 
         if len(iso) < 20:
             raise InvalidAS2805('This is not a valid iso!!')
-        if self.DEBUG == True:
+        if self.DEBUG:
             print 'ASCII to process <%s>' % iso
 
         self.__setMTIFromStr(iso)
         isoT = iso[4:]
         self.__getBitmapFromStr(isoT)
-        self.__initializeBitsFromBitmapStr(self.BITMAP_HEX)
-        if self.DEBUG == True:
+        self.__initializeBitsFromBitmapStr()
+        if self.DEBUG:
             print 'This is the array of bits (before) %s ' % self._VALUES
 
         self.__getBitFromStr(iso[4+len(self.BITMAP_HEX):])
-        if self.DEBUG == True:
+        if self.DEBUG:
             print 'This is the array of bits (after) %s ' % self._VALUES
 
             ################################################################################################
 
     def getBitsAndValues(self):
-        """Method that return an array of bits, values, types etc.
-			Each array value is a dictionary with: {'bit':X ,'type': Y, 'value': Z} Where:
-				bit: is the bit number
-				type: is the bit type
-				value: is the bit value inside this object
-			so the Generic array returned is:  [ (...),{'bit':X,'type': Y, 'value': Z}, (...)]
 
-		Example:
-			p1 = AS2805()
-			p1.setMTI('0800')
-			p1.setBit(2,2)
-			p1.setBit(4,4)
-			p1.setBit(12,12)
-			p1.setBit(17,17)
-			p1.setBit(99,99)
-
-			v1 = p1.getBitsAndValues()
-			for v in v1:
-				print 'Bit %s of type %s with value = %s' % (v['bit'],v['type'],v['value'])
-
-		@return: array of values.
-        """
         ret = []
         for cont in range(2, 126):
             if self._VALUES[cont] != self._EMPTY_VALUE:
-                _TMP = {}
-                _TMP['bit'] = "%d" % cont
-                _TMP['type'] = self.getLengthType(cont)
-                _TMP['value'] = self.getBit(cont)
+                _TMP = {'bit': "%d" % cont, 'type': self.getLengthType(cont), 'value': self.getBit(cont), 'format': self.getDataType(cont)}
+                #print _TMP
                 ret.append(_TMP)
         return ret
 
     ################################################################################################
 
     def getBit(self, bit):
-        """Return the value of the bit
-		@param: bit -> the number of the bit that you want the value
-		@raise: BitInexistent Exception, BitNotSet Exception
-        """
+
 
         if bit < 1 or bit > 128:
             raise BitInexistent("Bit number %s dosen't exist!" % bit)
@@ -942,60 +780,40 @@ class AS2805:
         if self._VALUES[bit] == self._EMPTY_VALUE:
             raise BitNotSet("Bit number %s was not set!" % bit)
 
-        if self.getLengthType(bit) == "LL" and (self.getDataType(bit) == 'n' or self.getDataType(bit) == 'z'):
-            value = self._VALUES[bit][2:]
-        elif self.getLengthType(bit) == "LLL" and (self.getDataType(bit) == 'n' or self.getDataType(bit) == 'z'):
-            value = self._VALUES[bit][3:]
-        elif self.getLengthType(bit) == "LL" and (self.getDataType(bit) == 'an' or self.getDataType(bit) == 'ans'):
+        if (str(self._DEF[bit][3]).count('.') == 3) and  (self._DEF[bit][2] == 'b'):#0LLL 2 octets
             value = binascii.unhexlify(self._VALUES[bit][4:])
-        elif self.getLengthType(bit) == "LLL" and (self.getDataType(bit) == 'an' or self.getDataType(bit) == 'ans' or self.getDataType(bit) == 'b'):
+
+        elif (str(self._DEF[bit][3]).count('.') == 3) and  (self._DEF[bit][2] == 'n' or self._DEF[bit][2] == 'z'): #0LLL 2 octets
+            value = binascii.unhexlify(self._VALUES[bit][4:])
+
+        elif (str(self._DEF[bit][3]).count('.') == 3) and (self._DEF[bit][2] == 'a' or self._DEF[bit][2] == 'ans' or self._DEF[bit][2] == 'ns' or self._DEF[bit][2] == 'x'): #LLL 3 octets
             value = binascii.unhexlify(self._VALUES[bit][6:])
-        elif self.getLengthType(bit) == "0LLL" :
-            value = self._VALUES[bit][4:]
+
+        elif (str(self._DEF[bit][3]).count('.') == 2) and  (self._DEF[bit][2] == 'n' or self._DEF[bit][2] == 'z'): #LL 2 octets
+            value = binascii.unhexlify(self._VALUES[bit][4:])
+
+        elif (str(self._DEF[bit][3]).count('.') == 2) and (self._DEF[bit][2] == 'a' or self._DEF[bit][2] == 'ans' or self._DEF[bit][2] == 'ns' or self._DEF[bit][2] == 'x'): #LL 2 octets
+            value = binascii.unhexlify(self._VALUES[bit][4:])
 
         else:
-            if self.getDataType(bit) == 'an' or self.getDataType(bit) == 'ans':
-                value = binascii.unhexlify(self._VALUES[bit])
-            else:
-                value = self._VALUES[bit]
+            value =   binascii.unhexlify(self._VALUES[bit])
 
         return value
 
     ################################################################################################
 
     def getNetworkISO(self, bigEndian=True):
-        """Method that return AS2805 ASCII package with the size in the beginning
-		By default, it return the package with size represented with big-endian.
-		Is the same that:
-			import struct
-			(...)
-			iso = AS2805()
-			iso.setBit(3,'300000')
-			(...)
-			ascii = iso.getRawIso()
-			# Example: big-endian
-			# To little-endian, replace '!h' with '<h'
-			netIso = struct.pack('!h',len(iso))
-			netIso += ascii
-			# Example: big-endian
-			# To little-endian, replace 'iso.getNetworkISO()' with 'iso.getNetworkISO(False)'
-			print 'This <%s> the same that <%s>' % (iso.getNetworkISO(),netIso)
 
-		@param: bigEndian (True|False) -> if you want that the size be represented in this way.
-		@return: size + ASCII AS2805 package ready to go to the network!
-		@raise: InvalidMTI Exception
-        """
 
-        netIso = ""
-        asciiIso = HexToByte(self.getRawIso())
+        asciiIso = self.getRawIso()
 
         if bigEndian:
-            netIso = struct.pack('!I', len(asciiIso))
-            if self.DEBUG == True:
+            netIso = struct.pack('!H', len(asciiIso))
+            if self.DEBUG:
                 print 'Pack Big-endian'
         else:
-            netIso = struct.pack('<I', len(asciiIso))
-            if self.DEBUG == True:
+            netIso = struct.pack('<H', len(asciiIso))
+            if self.DEBUG:
                 print 'Pack Little-endian'
 
         netIso += asciiIso
@@ -1007,7 +825,8 @@ class AS2805:
     """
     determine if the given string is hex
     """
-    def __isStringHex(self, s):
+    @staticmethod
+    def __isStringHex(s):
         return all(c in string.hexdigits for c in s)
 
     ################################################################################################
@@ -1018,18 +837,16 @@ class AS2805:
 
         size = iso[0:2]
         if bigEndian:
-            size = struct.unpack('!H', size)
-            if self.DEBUG == True:
+            if self.DEBUG:
                 print 'Unpack Big-endian'
         else:
-            size = struct.unpack('<H', size)
-            if self.DEBUG == True:
+            if self.DEBUG:
                 print 'Unpack Little-endian'
 
         #if len(iso) != (size[0] + 2):
         #    raise InvalidAS2805('This is not a valid iso!!The AS2805 ASCII(%s) is less than the size %s!' % (len(iso[2:]), size[0]))
 
-        self.setIsoContent(ByteToHex(iso)[8:])
+        self.setIsoContent(iso)
 
 ################################################################################################
 
@@ -1040,7 +857,7 @@ def ReadableAscii(s):
     """
     r = ''
     for c in s:
-        if ord(c) >= 32 and ord(c) <= 126:
+        if 32 <= ord(c) <= 126:
             r += c
         else:
             r += '.'
@@ -1064,20 +881,43 @@ def BinaryDump(s):
     """
     #Remove TCP length indicator
     s = s[2:]
-    while s != '':
-        part = s[:16]
-        s = s[16:]
+    dumphex(s)
+
+
+def dumphex(s):
+  global i
+  hex_str = ''
+  str = ""
+  for i in range(0,len(s)):
+    if s[i] in string.whitespace:
+      str += '.'
+      continue
+    if s[i] in string.printable:
+      str = str + s[i]
+      continue
+    str += '.'
+  bytes = map(lambda x: '%.2x' % x, map(ord, s))
+  print
+  for i in xrange(0,len(bytes)/16):
+    hex_str +=  '    %s' % string.join(bytes[i * 16:(i + 1) * 16])
+    hex_str +=  '    %s\n' % str[i*16:(i+1)*16]
+  hex_str += '    %-51s' % string.join(bytes[(i + 1) * 16:])
+  hex_str += '%s\n' % str[(i+1)*16:]
+
+  return hex_str
+
+
 
 ################################################################################################
 
 if __name__ == '__main__':
-    iso = AS2805(debug=False)
-    iso.setMTI('0420')
+    iso = AS2805(debug=True)
+    iso.setMTI('0200')
     #Set a Fixed Length Field
     iso.setBit(3, '011000')
     iso.setBit(4, '000000002000')
     iso.setBit(7, '0107235144')
-    iso.setBit(11, '000518')
+    iso.setBit(11, '00000518')
     iso.setBit(12, '105144')
     iso.setBit(13, '0108')
     iso.setBit(15, '0108')
@@ -1086,42 +926,77 @@ if __name__ == '__main__':
     iso.setBit(23, '000')
     iso.setBit(25, '41')
     iso.setBit(28, 'D00000200')
-    iso.setBit(32, '560258')
-    #iso.setBit(33, '61100016')
-    iso.setBit(35, '5188680100002932D15122015076719950000')
+    iso.setBit(32, '56025800000')
+    iso.setBit(33, '61100016')
+    iso.setBit(35, '5188680100002932')
     iso.setBit(37, '500810510518')
-    #iso.setBit(39, '00')
+    iso.setBit(39, '00')
     iso.setBit(41, 'S9218163')
-    iso.setBit(42, 'TYME            ')
+    iso.setBit(42, 'TYME           ')
     iso.setBit(43, '800 LANGDON ST,          MADISON      AU')
     iso.setBit(47, 'TCC01\\EFC00000000\\CCI0\FBKV\\')
     iso.setBit(48, '61E29E04896786B3950552E9118A655D0CD054BF3DC1E35E829C704030DBC8F6')
     iso.setBit(52, 'A8FB4E47EACB0FA1')
     iso.setBit(53, '0000000000000002')
-    iso.setBit(55, '9F02060000000020009F03060000000000009F1A020036950500000000005F2A0200369A031501089C01019F37044DFF3952820200009F360200069F3303E0E0809F2701809F2608433B5FDBBC5847FA5F3401009F34030103029F350122')
-    iso.setBit(57, '000000000000')
-    #iso.setBit(70, '301')
+    iso.setBit(55, '9F02060000000020009F03060000000000009')
+    iso.setBit(57, 'D00000045000')
+
     iso.setBit(64, '29365A0400000000')
-   # iso.setBit(99, '1234567')
-   # iso.setBit(100, '579944')
-   # iso.setBit(128, '027980E700000000')
+    iso.setBit(70, '301')
+    iso.setBit(99, '1234567')
+    iso.setBit(100, '579944')
+    iso.setBit(128, '027980E700000000')
+
+
+    print iso.getRawIso()
+
+    print HexToByte(iso.getRawIso())
 
 
     print iso.dumpFields()
-#    v1 = iso.getBitsAndValues()
-#    for v in v1:
-#        print 'Bit %s of type %s with value = %s' % (v['bit'], v['type'], v['value'])
-    message = iso.getNetworkISO()
+    print "Binary Data: \n"
 
-    print "getNetworkISO message = [%s]" % (message)
-    print "getNetworkISO HEX message = [%s]" % (ByteToHex(message))
+    print dumphex(iso.getNetworkISO())
 
 
-    iso_in = AS2805(debug=True)
-    iso_in.setNetworkISO(message)
 
-    print iso_in.getBit(48).encode('hex')
-    print iso_in.getBit(47)
-    print iso_in.dumpFields()
+    iso_new = AS2805(debug=True)
+    iso_new.setIsoContent(iso.getNetworkISO()[2:])
+    print iso_new.dumpFields()
+    print iso_new.getNetworkISO()
+    another_iso = AS2805(debug=True)
+    print another_iso.setIsoContent(iso_new.getNetworkISO()[2:])
 
+    print iso_new.getBit(3)
+    print iso_new.getBit(4)
+    print iso_new.getBit(7)
+    print iso_new.getBit(11)
+    print iso_new.getBit(12)
+    print iso_new.getBit(13)
+    print iso_new.getBit(15)
+    print iso_new.getBit(18)
+    print iso_new.getBit(22)
+    print iso_new.getBit(23)
+    print iso_new.getBit(25)
+    print iso_new.getBit(28)
+    print iso_new.getBit(32)
+    print iso_new.getBit(33)
+    print iso_new.getBit(35)
+    print iso_new.getBit(37)
+    print iso_new.getBit(39)
+    print iso_new.getBit(41)
+    print iso_new.getBit(42)
+    print iso_new.getBit(43)
+    print iso_new.getBit(47)
+    print iso_new.getBit(48)
+    print iso_new.getBit(52)
+    print iso_new.getBit(53)
+    print iso_new.getBit(55)
+    print iso_new.getBit(57)
+
+    print iso_new.getBit(64)
+    print iso_new.getBit(70)
+    print iso_new.getBit(99)
+    print iso_new.getBit(100)
+    print iso_new.getBit(128)
 
